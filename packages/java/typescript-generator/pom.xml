@@ -85,11 +85,6 @@
       <groupId>tools.jackson.dataformat</groupId>
       <artifactId>jackson-dataformat-yaml</artifactId>
     </dependency>
-    <!-- Vaadin Flow dependency from parser-jvm-utils -->
-    <dependency>
-      <groupId>com.vaadin</groupId>
-      <artifactId>flow-server</artifactId>
-    </dependency>
     <!-- Reflection library from parser-jvm-utils -->
     <dependency>
       <groupId>com.vaadin.external</groupId>
