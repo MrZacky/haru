@@ -1,6 +1,0 @@
-CustomEndpointName.ts
-WithoutValueEqual.ts
-MyEndpoint.ts
-com/example/entities/Account.ts
-connect-client.default.ts
-endpoints.ts

@@ -19,10 +19,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.mockStatic;
-import static org.mockito.Mockito.when;
 
 import java.lang.annotation.Annotation;
 import java.lang.annotation.ElementType;
@@ -34,8 +31,6 @@ import java.util.List;
 import java.util.Set;
 
 import org.junit.jupiter.api.Test;
-
-import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 
 public class EngineAutoConfigurationTest {
     @Target(ElementType.TYPE)
@@ -50,58 +45,25 @@ public class EngineAutoConfigurationTest {
     }
 
     @BrowserCallableEndpoint
-    private static class EndpointFromAot {
-    }
-
-    @BrowserCallableEndpoint
-    private static class EndpointFromClassFinder {
-    }
-
-    @BrowserCallableEndpoint("EndpointFromClassFinder")
-    private static class EndpointFromClassFinderWithCustomName {
+    private static class EndpointFromCustomFinder {
     }
 
     @Test
-    public void shouldUseLookupByDefault() throws Exception {
-        var classFinder = mock(ClassFinder.class);
-        when(classFinder
-                .getAnnotatedClasses((Class<? extends Annotation>) any()))
-                .thenReturn(Set.of(EndpointFromClassFinder.class));
-        var conf = new EngineAutoConfiguration.Builder()
-                .classFinder(classFinder)
-                .endpointAnnotations(BrowserCallableEndpoint.class).build();
-        assertEquals(List.of(EndpointFromClassFinder.class),
-                conf.getBrowserCallableFinder().find(conf));
-    }
-
-    @Test
-    public void shouldUseAotWhenNoClassFinder() throws Exception {
-        // classFinder is null by default in configuration
+    public void shouldThrowWhenNoFinderConfigured() {
         var conf = EngineAutoConfiguration.getDefault();
-        try (var aotMock = mockStatic(AotBrowserCallableFinder.class)) {
-            when(AotBrowserCallableFinder.find(conf))
-                    .thenReturn(List.of(EndpointFromAot.class));
-            assertEquals(List.of(EndpointFromAot.class),
-                    conf.getBrowserCallableFinder().find(conf));
-        }
+        assertThrows(ParserException.class,
+                () -> conf.getBrowserCallableFinder().find(conf));
     }
 
     @Test
-    public void shouldUseAotWhenClassFinderThrowsException() throws Exception {
-        var classFinder = mock(ClassFinder.class);
-        when(classFinder
-                .getAnnotatedClasses((Class<? extends Annotation>) any()))
-                .thenReturn(Set.of(EndpointFromClassFinder.class,
-                        EndpointFromClassFinderWithCustomName.class));
+    public void shouldUseCustomFinder() throws Exception {
+        var finder = (BrowserCallableFinder) (c) -> List
+                .of(EndpointFromCustomFinder.class);
         var conf = new EngineAutoConfiguration.Builder()
-                .classFinder(classFinder)
+                .browserCallableFinder(finder)
                 .endpointAnnotations(BrowserCallableEndpoint.class).build();
-        try (var aotMock = mockStatic(AotBrowserCallableFinder.class)) {
-            when(AotBrowserCallableFinder.find(conf))
-                    .thenReturn(List.of(EndpointFromAot.class));
-            assertEquals(List.of(EndpointFromAot.class),
-                    conf.getBrowserCallableFinder().find(conf));
-        }
+        assertEquals(List.of(EndpointFromCustomFinder.class),
+                conf.getBrowserCallableFinder().find(conf));
     }
 
     private static final ClassLoader testClassLoader1 = mock(ClassLoader.class);
@@ -160,11 +122,9 @@ public class EngineAutoConfigurationTest {
         var mainClass = "com.example.Main";
         var productionMode = true;
         var nodeCommand = "node-custom";
-        var classFinder = mock(ClassFinder.class);
         var classLoader = mock(ClassLoader.class);
-        // when(classFinder.getClassLoader()).thenReturn(classLoader);
         var browserCallableFinder = (BrowserCallableFinder) (conf) -> List
-                .of(EndpointFromAot.class);
+                .of(EndpointFromCustomFinder.class);
         var endpointAnnotation = BrowserCallableEndpoint.class;
         var endpointExposedAnnotation = BrowserCallableExposed.class;
 
@@ -173,7 +133,7 @@ public class EngineAutoConfigurationTest {
                 .classpath(classpathStrings).generator(generator).parser(parser)
                 .outputDir(outputDir).groupId(groupId).artifactId(artifactId)
                 .mainClass(mainClass).productionMode(productionMode)
-                .nodeCommand(nodeCommand).classFinder(classFinder)
+                .nodeCommand(nodeCommand)
                 .classLoader(classLoader)
                 .browserCallableFinder(browserCallableFinder)
                 .endpointAnnotations(endpointAnnotation)
@@ -194,7 +154,6 @@ public class EngineAutoConfigurationTest {
         assertEquals(mainClass, config.getMainClass());
         assertTrue(config.isProductionMode());
         assertEquals(nodeCommand, config.getNodeCommand());
-        assertSame(classFinder, config.getClassFinder());
         assertSame(classLoader, config.getClassLoader());
         assertSame(browserCallableFinder, config.getBrowserCallableFinder());
         assertEquals(List.of(endpointAnnotation),

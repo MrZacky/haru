@@ -33,13 +33,12 @@ import java.util.stream.Stream;
 
 import org.slf4j.Logger;
 
-import com.vaadin.flow.internal.FrontendUtils;
-
 /**
  * A generic command runner which throws a {@link CommandRunnerException}.
  */
 public interface CommandRunner {
-    boolean IS_WINDOWS = FrontendUtils.isWindows();
+    boolean IS_WINDOWS = System.getProperty("os.name").toLowerCase()
+            .contains("win");
 
     /**
      * Get the arguments to use when testing if the command is available.

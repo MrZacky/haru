@@ -8,58 +8,13 @@
   <name>Hilla</name>
   <packaging>pom</packaging>
 
-  <parent>
-    <groupId>com.vaadin</groupId>
-    <artifactId>vaadin-parent</artifactId>
-    <version>3.0.0</version>
-  </parent>
+  <groupId>com.vaadin</groupId>
 
   <modules>
-    <module>packages/java/endpoint</module>
-    <module>packages/java/engine-core</module>
-    <module>packages/java/engine-runtime</module>
-    <module>packages/java/maven-plugin</module>
-    <module>packages/java/gradle-plugin</module>
-    <module>packages/java/hilla</module>
-    <module>packages/java/hilla-bom</module>
-    <module>packages/java/typescript-generator</module>
     <module>packages/java/runtime-plugin-transfertypes</module>
+    <module>packages/java/typescript-generator</module>
+    <module>packages/java/engine-core</module>
   </modules>
-
-  <profiles>
-    <profile>
-      <id>it</id>
-      <activation>
-        <property>
-          <name>!release</name>
-        </property>
-      </activation>
-      <modules>
-        <module>packages/java/tests</module>
-      </modules>
-    </profile>
-    <profile>
-      <id>gradle</id>
-      <activation>
-        <jdk>(,22]</jdk>
-      </activation>
-      <modules>
-        <module>packages/java/gradle-plugin</module>
-        <module>packages/java/gradle-plugin/pom-portal.xml</module>
-      </modules>
-    </profile>
-    <profile>
-      <id>scripts</id>
-      <activation>
-        <property>
-          <name>!release</name>
-        </property>
-      </activation>
-      <modules>
-        <module>scripts/java/hilla-scripts</module>
-      </modules>
-    </profile>
-  </profiles>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -82,19 +37,12 @@
     <jackson.version>3.0.1</jackson.version>
     <junit.version>5.10.1</junit.version>
     <mockito.version>4.5.0</mockito.version>
-    <flow.version>25.1-SNAPSHOT</flow.version>
     <slf4j.version>2.0.9</slf4j.version>
     <spring.boot.version>4.0.2</spring.boot.version>
-    <testbench.version>10.0.0</testbench.version>
     <jakarta.validation.version>3.1.1</jakarta.validation.version>
     <jakarta.annotation.api.version>3.0.0</jakarta.annotation.api.version>
     <jakarta.activation.api.version>2.1.2</jakarta.activation.api.version>
     <jakarta.servlet.api.version>6.1.0</jakarta.servlet.api.version>
-    <hibernate.validator.version>8.0.2.Final</hibernate.validator.version>
-    <jaxb.version>4.0.4</jaxb.version>
-    <github.javaparser.core.version>3.28.0</github.javaparser.core.version>
-    <jetty.version>12.0.3</jetty.version>
-    <atmosphere.version>3.0.5.slf4jvaadin1</atmosphere.version>
     <kotlin.version>2.1.21</kotlin.version>
   </properties>
 
@@ -174,37 +122,12 @@
 
   <dependencyManagement>
     <dependencies>
-        <dependency>
-            <groupId>com.vaadin</groupId>
-            <artifactId>flow-bom</artifactId>
-            <version>${flow.version}</version>
-            <type>pom</type>
-            <scope>import</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.vaadin</groupId>
-            <artifactId>vaadin-testbench-bom</artifactId>
-            <version>${testbench.version}</version>
-            <type>pom</type>
-            <scope>import</scope>
-          </dependency>
-       <dependency>
+      <dependency>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-dependencies</artifactId>
         <version>${spring.boot.version}</version>
         <type>pom</type>
         <scope>import</scope>
-      </dependency>
-      <dependency>
-        <groupId>com.vaadin</groupId>
-        <artifactId>vaadin-spring</artifactId>
-        <version>${flow.version}</version>
-        <exclusions>
-          <exclusion>
-            <groupId>org.javassist</groupId>
-            <artifactId>javassist</artifactId>
-          </exclusion>
-        </exclusions>
       </dependency>
       <dependency>
         <groupId>io.github.classgraph</groupId>

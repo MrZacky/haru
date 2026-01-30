@@ -15,8 +15,10 @@
  */
 package com.vaadin.hilla.parser.testutils;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -25,6 +27,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -180,7 +183,7 @@ public abstract class AbstractFullStackTest {
             LOGGER.debug("Executing CLI: {}", String.join(" ", command));
 
             // Execute the CLI
-            com.vaadin.flow.internal.FrontendUtils.executeCommand(command,
+            executeCommand(command,
                     pb -> pb.directory(targetDir.toFile()));
 
             // Read generated files from output directory
@@ -206,9 +209,10 @@ public abstract class AbstractFullStackTest {
         } catch (JsonProcessingException e) {
             throw new FullStackExecutionException(
                     "Failed to serialize OpenAPI to JSON", e);
-        } catch (com.vaadin.flow.internal.FrontendUtils.CommandExecutionException e) {
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
             throw new FullStackExecutionException(
-                    "Failed to execute TypeScript generator CLI", e);
+                    "TypeScript generator CLI was interrupted", e);
         } catch (IOException e) {
             throw new FullStackExecutionException(
                     "Failed during full-stack execution", e);
@@ -243,14 +247,16 @@ public abstract class AbstractFullStackTest {
                     var json = require(jsonPath);
                     console.log(path.resolve(path.dirname(jsonPath), json.bin['tsgen']));
                     """;
-            String cliPath = com.vaadin.flow.internal.FrontendUtils
-                    .executeCommand(List.of("node", "--eval", script),
-                            pb -> pb.directory(targetDir.toFile()))
-                    .trim();
+            String cliPath = executeCommand(
+                    List.of("node", "--eval", script),
+                    pb -> pb.directory(targetDir.toFile())).trim();
             return Path.of(cliPath);
-        } catch (com.vaadin.flow.internal.FrontendUtils.CommandExecutionException e) {
-            throw new FullStackExecutionException("Failed to resolve CLI path",
-                    e);
+        } catch (IOException | InterruptedException e) {
+            if (e instanceof InterruptedException) {
+                Thread.currentThread().interrupt();
+            }
+            throw new FullStackExecutionException(
+                    "Failed to resolve CLI path", e);
         }
     }
 
@@ -266,6 +272,42 @@ public abstract class AbstractFullStackTest {
             }
         }
         Files.deleteIfExists(path);
+    }
+
+    /**
+     * Execute a command using ProcessBuilder and return its stdout.
+     *
+     * @param command
+     *            The command and arguments
+     * @param configurator
+     *            Optional configurator for the ProcessBuilder
+     * @return The command's standard output
+     * @throws IOException
+     *             if an I/O error occurs
+     * @throws InterruptedException
+     *             if the process is interrupted
+     */
+    private static String executeCommand(List<String> command,
+            Consumer<ProcessBuilder> configurator)
+            throws IOException, InterruptedException {
+        var pb = new ProcessBuilder(command);
+        pb.redirectErrorStream(true);
+        if (configurator != null) {
+            configurator.accept(pb);
+        }
+        var process = pb.start();
+        String output;
+        try (var reader = new BufferedReader(
+                new InputStreamReader(process.getInputStream()))) {
+            output = reader.lines().collect(Collectors.joining("\n"));
+        }
+        int exitCode = process.waitFor();
+        if (exitCode != 0) {
+            throw new IOException(
+                    "Command failed with exit code " + exitCode + ": "
+                            + String.join(" ", command) + "\nOutput: " + output);
+        }
+        return output;
     }
 
     /**

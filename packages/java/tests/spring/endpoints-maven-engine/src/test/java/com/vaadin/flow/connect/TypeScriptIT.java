@@ -1,1 +1,0 @@
-../../../../../../../../endpoints/src/test/java/com/vaadin/flow/connect/TypeScriptIT.java
