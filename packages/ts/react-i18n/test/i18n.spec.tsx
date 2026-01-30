@@ -1,6 +1,6 @@
+import { effect, useComputed, useSignalEffect } from '@preact/signals-react';
 import { render, cleanup } from '@testing-library/react';
 import CookieManager from '@vaadin/hilla-frontend/CookieManager.js';
-import { effect, useComputed, useSignalEffect } from '@vaadin/hilla-react-signals';
 import fetchMock from 'fetch-mock';
 import { useEffect, useMemo } from 'react';
 import sinon from 'sinon';

@@ -37,9 +37,7 @@ import io.swagger.v3.core.util.Json;
 import io.swagger.v3.oas.models.OpenAPI;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import reactor.core.publisher.Flux;
 
-import com.vaadin.hilla.EndpointSubscription;
 import com.vaadin.hilla.parser.core.Parser;
 import com.vaadin.hilla.parser.plugins.backbone.BackbonePlugin;
 import com.vaadin.hilla.parser.plugins.model.ModelPlugin;
@@ -60,7 +58,7 @@ import com.vaadin.hilla.parser.testutils.annotations.EndpointExposed;
  * <ul>
  * <li>All plugins (Backbone, TransferTypes, Model, Nonnull, SubTypes,
  * MultipartFileChecker)</li>
- * <li>Extended classpath (includes Flux and EndpointSubscription)</li>
+ * <li>Standard classpath</li>
  * <li>Both @Endpoint and @EndpointExposed annotations</li>
  * </ul>
  *
@@ -110,10 +108,8 @@ public abstract class AbstractFullStackTest {
      */
     protected void assertTypescriptMatchesSnapshot(Class<?>... endpointClasses)
             throws Exception {
-        // Build extended classpath that includes all required dependencies
-        var classpath = ResourceLoader.getClasspath(Arrays.stream(
-                new Class<?>[] { Flux.class, EndpointSubscription.class })
-                .map(ResourceLoader::new).collect(Collectors.toList()));
+        // Build classpath from current classloader
+        var classpath = ResourceLoader.getClasspath(List.of());
 
         // Parse Java → OpenAPI with all plugins
         var openAPI = new Parser()
@@ -139,8 +135,6 @@ public abstract class AbstractFullStackTest {
             "@vaadin/hilla-generator-plugin-client",
             "@vaadin/hilla-generator-plugin-model",
             "@vaadin/hilla-generator-plugin-barrel",
-            "@vaadin/hilla-generator-plugin-push",
-            "@vaadin/hilla-generator-plugin-signals",
             "@vaadin/hilla-generator-plugin-subtypes");
 
     /**

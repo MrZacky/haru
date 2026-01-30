@@ -1,4 +1,4 @@
-import { batch, computed, type ReadonlySignal, signal, type Signal } from '@vaadin/hilla-react-signals';
+import { batch, computed, type ReadonlySignal, signal, type Signal } from '@preact/signals-react';
 import { DefaultBackend, type I18nBackend } from './backend.js';
 import { FormatCache } from './FormatCache.js';
 import { getLanguageSettings, updateLanguageSettings } from './settings.js';
