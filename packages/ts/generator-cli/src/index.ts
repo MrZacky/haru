@@ -2,8 +2,8 @@ import { readFile } from 'node:fs/promises';
 import { isAbsolute, join, sep } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { parseArgs } from 'node:util';
-import Generator from '@vaadin/hilla-generator-core/Generator.js';
-import LoggerFactory from '@vaadin/hilla-generator-utils/LoggerFactory.js';
+import Generator from '@haru/generator-core/Generator.js';
+import LoggerFactory from '@haru/generator-utils/LoggerFactory.js';
 import type { PackageJson } from 'type-fest';
 import GeneratorIO from './GeneratorIO.js';
 

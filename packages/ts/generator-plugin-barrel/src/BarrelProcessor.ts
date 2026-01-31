@@ -1,8 +1,8 @@
 import { basename, dirname } from 'path';
-import type Plugin from '@vaadin/hilla-generator-core/Plugin.js';
-import createSourceFile from '@vaadin/hilla-generator-utils/createSourceFile.js';
-import DependencyManager from '@vaadin/hilla-generator-utils/dependencies/DependencyManager.js';
-import PathManager from '@vaadin/hilla-generator-utils/dependencies/PathManager.js';
+import type Plugin from '@haru/generator-core/Plugin.js';
+import createSourceFile from '@haru/generator-utils/createSourceFile.js';
+import DependencyManager from '@haru/generator-utils/dependencies/DependencyManager.js';
+import PathManager from '@haru/generator-utils/dependencies/PathManager.js';
 import type { SourceFile } from 'typescript';
 
 export default class BarrelProcessor {

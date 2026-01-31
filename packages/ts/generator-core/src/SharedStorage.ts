@@ -1,5 +1,5 @@
 import type { $Refs } from '@apidevtools/swagger-parser';
-import type DependencyManager from '@vaadin/hilla-generator-utils/dependencies/DependencyManager.js';
+import type DependencyManager from '@haru/generator-utils/dependencies/DependencyManager.js';
 import type { OpenAPIV3 } from 'openapi-types';
 import type { SourceFile, TypeNode } from 'typescript';
 

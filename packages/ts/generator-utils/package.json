@@ -1,5 +1,5 @@
 {
-  "name": "@vaadin/hilla-generator-utils",
+  "name": "@haru/generator-utils",
   "version": "25.1.0-alpha2",
   "description": "A set of utils for developing Hilla generator plugins",
   "main": "index.js",

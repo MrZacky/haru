@@ -1,5 +1,5 @@
-import type Plugin from '@vaadin/hilla-generator-core/Plugin.js';
-import type DependencyManager from '@vaadin/hilla-generator-utils/dependencies/DependencyManager.js';
+import type Plugin from '@haru/generator-core/Plugin.js';
+import type DependencyManager from '@haru/generator-utils/dependencies/DependencyManager.js';
 import ts, { type ArrowFunction, type Expression, type Identifier, type PropertyDeclaration } from 'typescript';
 
 export type Context = Readonly<{

@@ -1,6 +1,6 @@
 /* eslint-disable import/no-extraneous-dependencies */
 import { join } from 'node:path';
-import ClientPlugin from '@vaadin/hilla-generator-plugin-client';
+import ClientPlugin from '@haru/generator-plugin-client';
 import sinonChai from 'sinon-chai';
 import { chai, describe, expect, it } from 'vitest';
 import BackbonePlugin from '../../src/index.js';

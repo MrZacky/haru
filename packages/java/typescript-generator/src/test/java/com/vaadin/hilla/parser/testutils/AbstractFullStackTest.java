@@ -15,8 +15,10 @@
  */
 package com.vaadin.hilla.parser.testutils;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -25,6 +27,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -34,9 +37,7 @@ import io.swagger.v3.core.util.Json;
 import io.swagger.v3.oas.models.OpenAPI;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import reactor.core.publisher.Flux;
 
-import com.vaadin.hilla.EndpointSubscription;
 import com.vaadin.hilla.parser.core.Parser;
 import com.vaadin.hilla.parser.plugins.backbone.BackbonePlugin;
 import com.vaadin.hilla.parser.plugins.model.ModelPlugin;
@@ -57,7 +58,7 @@ import com.vaadin.hilla.parser.testutils.annotations.EndpointExposed;
  * <ul>
  * <li>All plugins (Backbone, TransferTypes, Model, Nonnull, SubTypes,
  * MultipartFileChecker)</li>
- * <li>Extended classpath (includes Flux and EndpointSubscription)</li>
+ * <li>Standard classpath</li>
  * <li>Both @Endpoint and @EndpointExposed annotations</li>
  * </ul>
  *
@@ -107,10 +108,8 @@ public abstract class AbstractFullStackTest {
      */
     protected void assertTypescriptMatchesSnapshot(Class<?>... endpointClasses)
             throws Exception {
-        // Build extended classpath that includes all required dependencies
-        var classpath = ResourceLoader.getClasspath(Arrays.stream(
-                new Class<?>[] { Flux.class, EndpointSubscription.class })
-                .map(ResourceLoader::new).collect(Collectors.toList()));
+        // Build classpath from current classloader
+        var classpath = ResourceLoader.getClasspath(List.of());
 
         // Parse Java → OpenAPI with all plugins
         var openAPI = new Parser()
@@ -131,14 +130,12 @@ public abstract class AbstractFullStackTest {
 
     // Standard Hilla generator plugins in the correct loading order
     private static final List<String> GENERATOR_PLUGINS = List.of(
-            "@vaadin/hilla-generator-plugin-transfertypes",
-            "@vaadin/hilla-generator-plugin-backbone",
-            "@vaadin/hilla-generator-plugin-client",
-            "@vaadin/hilla-generator-plugin-model",
-            "@vaadin/hilla-generator-plugin-barrel",
-            "@vaadin/hilla-generator-plugin-push",
-            "@vaadin/hilla-generator-plugin-signals",
-            "@vaadin/hilla-generator-plugin-subtypes");
+            "@haru/generator-plugin-transfertypes",
+            "@haru/generator-plugin-backbone",
+            "@haru/generator-plugin-client",
+            "@haru/generator-plugin-model",
+            "@haru/generator-plugin-barrel",
+            "@haru/generator-plugin-subtypes");
 
     /**
      * Execute the full stack: Java → OpenAPI → TypeScript
@@ -180,7 +177,7 @@ public abstract class AbstractFullStackTest {
             LOGGER.debug("Executing CLI: {}", String.join(" ", command));
 
             // Execute the CLI
-            com.vaadin.flow.internal.FrontendUtils.executeCommand(command,
+            executeCommand(command,
                     pb -> pb.directory(targetDir.toFile()));
 
             // Read generated files from output directory
@@ -206,9 +203,10 @@ public abstract class AbstractFullStackTest {
         } catch (JsonProcessingException e) {
             throw new FullStackExecutionException(
                     "Failed to serialize OpenAPI to JSON", e);
-        } catch (com.vaadin.flow.internal.FrontendUtils.CommandExecutionException e) {
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
             throw new FullStackExecutionException(
-                    "Failed to execute TypeScript generator CLI", e);
+                    "TypeScript generator CLI was interrupted", e);
         } catch (IOException e) {
             throw new FullStackExecutionException(
                     "Failed during full-stack execution", e);
@@ -239,18 +237,20 @@ public abstract class AbstractFullStackTest {
         try {
             String script = """
                     var path = require('path');
-                    var jsonPath = require.resolve('@vaadin/hilla-generator-cli/package.json');
+                    var jsonPath = require.resolve('@haru/generator-cli/package.json');
                     var json = require(jsonPath);
                     console.log(path.resolve(path.dirname(jsonPath), json.bin['tsgen']));
                     """;
-            String cliPath = com.vaadin.flow.internal.FrontendUtils
-                    .executeCommand(List.of("node", "--eval", script),
-                            pb -> pb.directory(targetDir.toFile()))
-                    .trim();
+            String cliPath = executeCommand(
+                    List.of("node", "--eval", script),
+                    pb -> pb.directory(targetDir.toFile())).trim();
             return Path.of(cliPath);
-        } catch (com.vaadin.flow.internal.FrontendUtils.CommandExecutionException e) {
-            throw new FullStackExecutionException("Failed to resolve CLI path",
-                    e);
+        } catch (IOException | InterruptedException e) {
+            if (e instanceof InterruptedException) {
+                Thread.currentThread().interrupt();
+            }
+            throw new FullStackExecutionException(
+                    "Failed to resolve CLI path", e);
         }
     }
 
@@ -266,6 +266,42 @@ public abstract class AbstractFullStackTest {
             }
         }
         Files.deleteIfExists(path);
+    }
+
+    /**
+     * Execute a command using ProcessBuilder and return its stdout.
+     *
+     * @param command
+     *            The command and arguments
+     * @param configurator
+     *            Optional configurator for the ProcessBuilder
+     * @return The command's standard output
+     * @throws IOException
+     *             if an I/O error occurs
+     * @throws InterruptedException
+     *             if the process is interrupted
+     */
+    private static String executeCommand(List<String> command,
+            Consumer<ProcessBuilder> configurator)
+            throws IOException, InterruptedException {
+        var pb = new ProcessBuilder(command);
+        pb.redirectErrorStream(true);
+        if (configurator != null) {
+            configurator.accept(pb);
+        }
+        var process = pb.start();
+        String output;
+        try (var reader = new BufferedReader(
+                new InputStreamReader(process.getInputStream()))) {
+            output = reader.lines().collect(Collectors.joining("\n"));
+        }
+        int exitCode = process.waitFor();
+        if (exitCode != 0) {
+            throw new IOException(
+                    "Command failed with exit code " + exitCode + ": "
+                            + String.join(" ", command) + "\nOutput: " + output);
+        }
+        return output;
     }
 
     /**

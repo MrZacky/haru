@@ -40,7 +40,7 @@ public final class GeneratorProcessor {
     private static final Logger logger = LoggerFactory
             .getLogger(GeneratorProcessor.class);
 
-    private static String TSGEN_PACKAGE_NAME = "@vaadin/hilla-generator-cli";
+    private static String TSGEN_PACKAGE_NAME = "@haru/generator-cli";
     private final Path baseDir;
     private final String nodeCommand;
     private final Path openAPIFile;

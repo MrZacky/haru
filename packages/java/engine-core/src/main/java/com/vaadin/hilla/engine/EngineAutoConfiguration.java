@@ -22,21 +22,16 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
-import java.util.Objects;
 import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.vaadin.flow.internal.FrontendUtils;
-import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 
 /**
  * The default configuration for the Hilla engine. For internal use only.
@@ -49,6 +44,7 @@ public class EngineAutoConfiguration {
             .getLogger(EngineAutoConfiguration.class);
 
     public static final String OPEN_API_PATH = "hilla-openapi.json";
+    static final String DEFAULT_FRONTEND_GENERATED_DIR = "src/main/frontend/generated";
     private Set<Path> classpath = Arrays
             .stream(System.getProperty("java.class.path")
                     .split(File.pathSeparator))
@@ -65,8 +61,8 @@ public class EngineAutoConfiguration {
     private BrowserCallableFinder browserCallableFinder;
     private boolean productionMode = false;
     private String nodeCommand = "node";
-    private ClassFinder classFinder;
     private ClassLoader classLoader;
+    private Path externalOpenAPIPath;
     private EngineConfiguration userEngineConfiguration;
 
     private EngineAutoConfiguration() {
@@ -79,8 +75,7 @@ public class EngineAutoConfiguration {
         if (Files.exists(legacyFrontendDir)) {
             outputDir = legacyFrontendDir.resolve("generated");
         } else {
-            outputDir = baseDir.resolve(
-                    FrontendUtils.DEFAULT_PROJECT_FRONTEND_GENERATED_DIR);
+            outputDir = baseDir.resolve(DEFAULT_FRONTEND_GENERATED_DIR);
         }
     }
 
@@ -133,15 +128,7 @@ public class EngineAutoConfiguration {
         return nodeCommand;
     }
 
-    public ClassFinder getClassFinder() {
-        return classFinder;
-    }
-
     public ClassLoader getClassLoader() {
-        if (classLoader == null && getClassFinder() != null) {
-            classLoader = getClassFinder().getClassLoader();
-        }
-
         if (classLoader == null) {
             var urls = getClasspath().stream().map(path -> {
                 try {
@@ -165,6 +152,10 @@ public class EngineAutoConfiguration {
         return parser.getEndpointExposedAnnotations();
     }
 
+    public Path getExternalOpenAPIPath() {
+        return externalOpenAPIPath;
+    }
+
     public Path getOpenAPIFile() {
         return productionMode
                 ? buildDir.resolve("classes").resolve(OPEN_API_PATH)
@@ -176,29 +167,9 @@ public class EngineAutoConfiguration {
 
         if (result == null) {
             result = (conf) -> {
-                var exceptions = new ArrayList<BrowserCallableFinderException>();
-
-                return Stream.<BrowserCallableFinder> of(
-                        LookupBrowserCallableFinder::find,
-                        AotBrowserCallableFinder::find).map(finder -> {
-                            try {
-                                return finder.find(conf);
-                            } catch (BrowserCallableFinderException e) {
-                                exceptions.add(e);
-                                return null;
-                            }
-                        }).filter(Objects::nonNull).findFirst()
-                        .orElseThrow(() -> {
-                            if (exceptions.isEmpty()) {
-                                return new ParserException(
-                                        "No browser-callable classes found");
-                            } else {
-                                var exception = new ParserException(
-                                        "Failed to find browser-callable classes");
-                                exceptions.forEach(exception::addSuppressed);
-                                return exception;
-                            }
-                        });
+                throw new ParserException(
+                        "No browser-callable finder configured. "
+                                + "Set a custom BrowserCallableFinder via the Builder.");
             };
         }
 
@@ -278,8 +249,8 @@ public class EngineAutoConfiguration {
             this.configuration.browserCallableFinder = configuration.browserCallableFinder;
             this.configuration.productionMode = configuration.productionMode;
             this.configuration.nodeCommand = configuration.nodeCommand;
-            this.configuration.classFinder = configuration.classFinder;
             this.configuration.classLoader = configuration.classLoader;
+            this.configuration.externalOpenAPIPath = configuration.externalOpenAPIPath;
             this.configuration.parser.setEndpointAnnotations(
                     configuration.getEndpointAnnotations());
             this.configuration.parser.setEndpointExposedAnnotations(
@@ -365,13 +336,14 @@ public class EngineAutoConfiguration {
             return this;
         }
 
-        public Builder classFinder(ClassFinder value) {
-            configuration.classFinder = value;
+        public Builder classLoader(ClassLoader value) {
+            configuration.classLoader = value;
             return this;
         }
 
-        public Builder classLoader(ClassLoader value) {
-            configuration.classLoader = value;
+        public Builder externalOpenAPIPath(Path value) {
+            configuration.externalOpenAPIPath = value != null ? resolve(value)
+                    : null;
             return this;
         }
 
@@ -389,36 +361,11 @@ public class EngineAutoConfiguration {
         }
 
         public Builder withDefaultAnnotations() {
-            ClassLoader classLoader = getClass().getClassLoader();
-            if (configuration.classpath != null) {
-                var urls = configuration.classpath.stream().map(path -> {
-                    try {
-                        return path.toUri().toURL();
-                    } catch (MalformedURLException e) {
-                        throw new ConfigurationException(
-                                "Classpath contains invalid elements", e);
-                    }
-                }).toArray(URL[]::new);
-                classLoader = new URLClassLoader(urls,
-                        getClass().getClassLoader());
-            }
-
-            try {
-                configuration.parser.setEndpointAnnotations(List.of(
-                        (Class<? extends Annotation>) Class.forName(
-                                "com.vaadin.hilla.BrowserCallable", true,
-                                classLoader),
-                        (Class<? extends Annotation>) Class.forName(
-                                "com.vaadin.hilla.Endpoint", true,
-                                classLoader)));
-                configuration.parser.setEndpointExposedAnnotations(
-                        List.of((Class<? extends Annotation>) Class.forName(
-                                "com.vaadin.hilla.EndpointExposed", true,
-                                classLoader)));
-            } catch (Throwable t) {
-                LOGGER.debug(
-                        "Default annotations not found. Hilla is probably not in the classpath.");
-            }
+            configuration.parser.setEndpointAnnotations(List.of(
+                    com.vaadin.hilla.BrowserCallable.class,
+                    com.vaadin.hilla.Endpoint.class));
+            configuration.parser.setEndpointExposedAnnotations(
+                    List.of(com.vaadin.hilla.EndpointExposed.class));
             return this;
         }
 

@@ -19,8 +19,8 @@ import {
   type ReferenceSchema,
   type Schema,
   type StringSchema,
-} from '@vaadin/hilla-generator-core/Schema.js';
-import type DependencyManager from '@vaadin/hilla-generator-utils/dependencies/DependencyManager.js';
+} from '@haru/generator-core/Schema.js';
+import type DependencyManager from '@haru/generator-utils/dependencies/DependencyManager.js';
 import ts, {
   type Expression,
   type Identifier,

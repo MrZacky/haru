@@ -1,5 +1,5 @@
 {
-  "name": "@vaadin/hilla-generator-plugin-client",
+  "name": "@haru/generator-plugin-client",
   "version": "25.1.0-alpha2",
   "description": "A Hilla TypeScript Generator plugin to generate default client implementation",
   "main": "index.js",
@@ -49,8 +49,8 @@
     "access": "public"
   },
   "dependencies": {
-    "@vaadin/hilla-generator-core": "25.1.0-alpha2",
-    "@vaadin/hilla-generator-utils": "25.1.0-alpha2",
+    "@haru/generator-core": "25.1.0-alpha2",
+    "@haru/generator-utils": "25.1.0-alpha2",
     "typescript": "5.9.3"
   }
 }

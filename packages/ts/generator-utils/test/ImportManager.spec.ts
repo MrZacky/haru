@@ -13,7 +13,7 @@ describe('ImportManager', () => {
     beforeEach(() => {
       manager = new ImportManager(new Intl.Collator());
       manager.named.add('@vaadin/hilla-frontend', 'EndpointRequestInit');
-      manager.default.add('@vaadin/hilla-generator-plugin-client', 'client');
+      manager.default.add('@haru/generator-plugin-client', 'client');
       manager.namespace.add('Frontend/generated/FooEndpoint', 'FooEndpoint');
     });
 
@@ -27,7 +27,7 @@ describe('ImportManager', () => {
 
     it('should extract imports from a code', () => {
       const code = `import { EndpointRequestInit } from "@vaadin/hilla-frontend";
-import client from "@vaadin/hilla-generator-plugin-client";
+import client from "@haru/generator-plugin-client";
 import * as FooEndpoint from "Frontend/generated/FooEndpoint";`;
 
       manager = new ImportManager(new Intl.Collator());
@@ -40,7 +40,7 @@ import * as FooEndpoint from "Frontend/generated/FooEndpoint";`;
         false,
       ]);
       expect(manager.default[Symbol.iterator]().next().value).to.be.like([
-        '@vaadin/hilla-generator-plugin-client',
+        '@haru/generator-plugin-client',
         { text: 'client' },
         false,
       ]);

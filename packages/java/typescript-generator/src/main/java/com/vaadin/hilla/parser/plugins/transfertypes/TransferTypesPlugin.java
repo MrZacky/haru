@@ -40,13 +40,7 @@ import com.vaadin.hilla.parser.models.ClassRefSignatureModel;
 import com.vaadin.hilla.parser.plugins.backbone.BackbonePlugin;
 import com.vaadin.hilla.parser.plugins.backbone.nodes.EntityNode;
 import com.vaadin.hilla.parser.plugins.backbone.nodes.TypedNode;
-import com.vaadin.hilla.runtime.transfertypes.EndpointSubscription;
 import com.vaadin.hilla.runtime.transfertypes.File;
-import com.vaadin.hilla.runtime.transfertypes.Flux;
-import com.vaadin.hilla.runtime.transfertypes.ListSignal;
-import com.vaadin.hilla.runtime.transfertypes.NumberSignal;
-import com.vaadin.hilla.runtime.transfertypes.Signal;
-import com.vaadin.hilla.runtime.transfertypes.ValueSignal;
 import com.vaadin.hilla.transfertypes.annotations.FromModule;
 
 public final class TransferTypesPlugin
@@ -60,21 +54,11 @@ public final class TransferTypesPlugin
         classMap.put("org.springframework.data.domain.Sort$Order", Order.class);
         classMap.put("org.springframework.data.domain.Sort", Sort.class);
         classMap.put(UUID.class.getName(), String.class);
-        classMap.put("reactor.core.publisher.Flux", Flux.class);
-        classMap.put("com.vaadin.hilla.EndpointSubscription",
-                EndpointSubscription.class);
         classMap.put(JsonNode.class.getName(), Object.class);
         classMap.put(ObjectNode.class.getName(), Object.class);
         classMap.put(ArrayNode.class.getName(), List.class);
         classMap.put("org.springframework.web.multipart.MultipartFile",
                 File.class);
-        classMap.put("com.vaadin.signals.Signal", Signal.class);
-        classMap.put("com.vaadin.signals.shared.SharedValueSignal",
-                ValueSignal.class);
-        classMap.put("com.vaadin.signals.shared.SharedNumberSignal",
-                NumberSignal.class);
-        classMap.put("com.vaadin.signals.shared.SharedListSignal",
-                ListSignal.class);
     }
 
     @Override

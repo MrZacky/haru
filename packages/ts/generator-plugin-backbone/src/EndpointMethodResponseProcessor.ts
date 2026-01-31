@@ -1,6 +1,6 @@
-import type Plugin from '@vaadin/hilla-generator-core/Plugin.js';
-import type { TransferTypes } from '@vaadin/hilla-generator-core/SharedStorage.js';
-import type DependencyManager from '@vaadin/hilla-generator-utils/dependencies/DependencyManager.js';
+import type Plugin from '@haru/generator-core/Plugin.js';
+import type { TransferTypes } from '@haru/generator-core/SharedStorage.js';
+import type DependencyManager from '@haru/generator-utils/dependencies/DependencyManager.js';
 import type { OpenAPIV3 } from 'openapi-types';
 import type { TypeNode } from 'typescript';
 import TypeSchemaProcessor from './TypeSchemaProcessor.js';
@@ -34,14 +34,17 @@ export default class EndpointMethodResponseProcessor {
   process(): readonly TypeNode[] {
     switch (this.#code) {
       case '200':
-        return this.#processOk();
+      case '201':
+        return this.#processWithContent();
+      case '204':
+        return [];
       default:
-        this.#owner.logger.warn(`Response code '${this.#code} is not supported'`);
+        this.#owner.logger.warn(`Response code '${this.#code}' is not supported`);
         return [];
     }
   }
 
-  #processOk(): readonly TypeNode[] {
+  #processWithContent(): readonly TypeNode[] {
     const rawSchema = this.#response.content?.[defaultMediaType]?.schema;
 
     return rawSchema ? new TypeSchemaProcessor(rawSchema, this.#dependencies, this.#transferTypes).process() : [];

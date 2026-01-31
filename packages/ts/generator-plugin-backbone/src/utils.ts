@@ -1,8 +1,4 @@
-import {
-  isAnyOfRuleComposedSchema,
-  type AllOfRuleComposedSchema,
-  type Schema,
-} from '@vaadin/hilla-generator-core/Schema.js';
+import { isAnyOfRuleComposedSchema, type AllOfRuleComposedSchema, type Schema } from '@haru/generator-core/Schema.js';
 
 export const defaultMediaType = 'application/json';
 

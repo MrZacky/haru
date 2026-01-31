@@ -1,12 +1,7 @@
-import type Plugin from '@vaadin/hilla-generator-core/Plugin.js';
-import {
-  isEmptyObject,
-  isObjectSchema,
-  type NonEmptyObjectSchema,
-  type Schema,
-} from '@vaadin/hilla-generator-core/Schema.js';
-import type { TransferTypes } from '@vaadin/hilla-generator-core/SharedStorage.js';
-import type DependencyManager from '@vaadin/hilla-generator-utils/dependencies/DependencyManager.js';
+import type Plugin from '@haru/generator-core/Plugin.js';
+import { isEmptyObject, isObjectSchema, type NonEmptyObjectSchema, type Schema } from '@haru/generator-core/Schema.js';
+import type { TransferTypes } from '@haru/generator-core/SharedStorage.js';
+import type DependencyManager from '@haru/generator-utils/dependencies/DependencyManager.js';
 import type { OpenAPIV3 } from 'openapi-types';
 import ts, { type Identifier, type ObjectLiteralExpression, type ParameterDeclaration } from 'typescript';
 import TypeSchemaProcessor from './TypeSchemaProcessor.js';
@@ -21,34 +16,68 @@ export type EndpointMethodRequestBodyProcessingResult = Readonly<{
 }>;
 
 const DEFAULT_INIT_PARAM_NAME = 'init';
-const INIT_TYPE_NAME = 'EndpointRequestInit';
-const HILLA_FRONTEND_NAME = '@vaadin/hilla-frontend';
+const INIT_TYPE_NAME = 'ClientRequestInit';
 
 export default class EndpointMethodRequestBodyProcessor {
   readonly #dependencies: DependencyManager;
   readonly #transferTypes: TransferTypes;
   readonly #owner: Plugin;
   readonly #requestBody?: EndpointMethodRequestBody;
+  readonly #pathParameters: OpenAPIV3.ParameterObject[];
+  readonly #queryParameters: OpenAPIV3.ParameterObject[];
+  readonly #clientModulePath: string;
 
+  // eslint-disable-next-line @typescript-eslint/max-params
   constructor(
     requestBody: OpenAPIV3.ReferenceObject | OpenAPIV3.RequestBodyObject | undefined,
     dependencies: DependencyManager,
     transferTypes: TransferTypes,
     owner: Plugin,
+    clientModulePath: string,
+    pathParameters?: OpenAPIV3.ParameterObject[],
+    operationParameters?: OpenAPIV3.ParameterObject[],
   ) {
     this.#owner = owner;
     this.#dependencies = dependencies;
     this.#requestBody = requestBody ? owner.resolver.resolve(requestBody) : undefined;
     this.#transferTypes = transferTypes;
+    this.#clientModulePath = clientModulePath;
+    this.#pathParameters = pathParameters ?? [];
+    this.#queryParameters = (operationParameters ?? []).filter((p) => p.in === 'query');
   }
 
   process(): EndpointMethodRequestBodyProcessingResult {
     const { imports, paths } = this.#dependencies;
-    const path = paths.createBareModulePath(HILLA_FRONTEND_NAME);
+    const clientPath = paths.createRelativePath(this.#clientModulePath);
     const initTypeIdentifier =
-      imports.named.getIdentifier(path, INIT_TYPE_NAME) ?? imports.named.add(path, INIT_TYPE_NAME);
+      imports.named.getIdentifier(clientPath, INIT_TYPE_NAME) ?? imports.named.add(clientPath, INIT_TYPE_NAME);
 
-    if (!this.#requestBody) {
+    // Collect all parameter data: path params + query params + request body params
+    const allParameterData: Array<readonly [string, Schema]> = [];
+
+    // Add path parameters
+    for (const param of this.#pathParameters) {
+      if (param.schema) {
+        const schema = this.#owner.resolver.resolve(param.schema) as Schema;
+        allParameterData.push([param.name, schema]);
+      }
+    }
+
+    // Add query parameters
+    for (const param of this.#queryParameters) {
+      if (param.schema) {
+        const schema = this.#owner.resolver.resolve(param.schema) as Schema;
+        allParameterData.push([param.name, schema]);
+      }
+    }
+
+    // Add request body parameters
+    if (this.#requestBody) {
+      const bodyParams = this.#extractParameterData(this.#requestBody.content[defaultMediaType].schema);
+      allParameterData.push(...bodyParams);
+    }
+
+    if (allParameterData.length === 0) {
       return {
         initParam: ts.factory.createIdentifier(DEFAULT_INIT_PARAM_NAME),
         packedParameters: ts.factory.createObjectLiteralExpression(),
@@ -64,8 +93,7 @@ export default class EndpointMethodRequestBodyProcessor {
       };
     }
 
-    const parameterData = this.#extractParameterData(this.#requestBody.content[defaultMediaType].schema);
-    const parameterNames = parameterData.map(([name]) => name);
+    const parameterNames = allParameterData.map(([name]) => name);
     let initParamName = DEFAULT_INIT_PARAM_NAME;
 
     while (parameterNames.includes(initParamName)) {
@@ -75,10 +103,10 @@ export default class EndpointMethodRequestBodyProcessor {
     return {
       initParam: ts.factory.createIdentifier(initParamName),
       packedParameters: ts.factory.createObjectLiteralExpression(
-        parameterData.map(([name]) => ts.factory.createShorthandPropertyAssignment(name)),
+        allParameterData.map(([name]) => ts.factory.createShorthandPropertyAssignment(name)),
       ),
       parameters: [
-        ...parameterData.map(([name, schema]) => {
+        ...allParameterData.map(([name, schema]) => {
           const nodes = new TypeSchemaProcessor(schema, this.#dependencies, this.#transferTypes).process();
 
           return ts.factory.createParameterDeclaration(

@@ -1,5 +1,5 @@
 import SwaggerParser from '@apidevtools/swagger-parser';
-import type LoggerFactory from '@vaadin/hilla-generator-utils/LoggerFactory.js';
+import type LoggerFactory from '@haru/generator-utils/LoggerFactory.js';
 import type { OpenAPIV3 } from 'openapi-types';
 import ts from 'typescript';
 import type { PluginConstructor } from './Plugin.js';

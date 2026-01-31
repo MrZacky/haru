@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/restrict-template-expressions */
 import { mkdir, readFile, rm, writeFile } from 'node:fs/promises';
-import Plugin, { type PluginConstructor } from '@vaadin/hilla-generator-core/Plugin.js';
-import type LoggerFactory from '@vaadin/hilla-generator-utils/LoggerFactory.js';
+import Plugin, { type PluginConstructor } from '@haru/generator-core/Plugin.js';
+import type LoggerFactory from '@haru/generator-utils/LoggerFactory.js';
 import GeneratorIOException from './GeneratorIOException.js';
 
 type PluginConstructorModule = Readonly<{

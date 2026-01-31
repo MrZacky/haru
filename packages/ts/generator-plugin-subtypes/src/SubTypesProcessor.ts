@@ -4,10 +4,10 @@ import {
   convertReferenceSchemaToSpecifier,
   type ReferenceSchema,
   simplifyFullyQualifiedName,
-} from '@vaadin/hilla-generator-core/Schema.js';
-import createSourceFile from '@vaadin/hilla-generator-utils/createSourceFile.js';
-import DependencyManager from '@vaadin/hilla-generator-utils/dependencies/DependencyManager.js';
-import PathManager from '@vaadin/hilla-generator-utils/dependencies/PathManager.js';
+} from '@haru/generator-core/Schema.js';
+import createSourceFile from '@haru/generator-utils/createSourceFile.js';
+import DependencyManager from '@haru/generator-utils/dependencies/DependencyManager.js';
+import PathManager from '@haru/generator-utils/dependencies/PathManager.js';
 import ts, { type SourceFile } from 'typescript';
 
 export class SubTypesProcessor {

@@ -30,26 +30,6 @@
   <dependencies>
     <dependency>
       <groupId>com.vaadin</groupId>
-      <artifactId>flow-server</artifactId>
-      <exclusions>
-        <exclusion>
-          <groupId>com.fasterxml.jackson.core</groupId>
-          <artifactId>jackson-databind</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>com.fasterxml.jackson.core</groupId>
-          <artifactId>jackson-core</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
-      <groupId>com.vaadin</groupId>
-      <artifactId>flow-build-tools</artifactId>
-      <classifier>shaded</classifier>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>com.vaadin</groupId>
       <artifactId>hilla-typescript-generator</artifactId>
       <version>${project.version}</version>
     </dependency>
@@ -62,6 +42,11 @@
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-loader-tools</artifactId>
       <version>${spring.boot.version}</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-context</artifactId>
       <scope>provided</scope>
     </dependency>
     <dependency>

@@ -1,5 +1,5 @@
-import type { NonComposedRegularSchema, Schema } from '@vaadin/hilla-generator-core/Schema.js';
-import { template, transform } from '@vaadin/hilla-generator-utils/ast.js';
+import type { NonComposedRegularSchema, Schema } from '@haru/generator-core/Schema.js';
+import { template, transform } from '@haru/generator-utils/ast.js';
 import ts, {
   type Expression,
   type Identifier,

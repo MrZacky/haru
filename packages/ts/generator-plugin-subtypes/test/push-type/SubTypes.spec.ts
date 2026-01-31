@@ -1,6 +1,6 @@
 /* eslint-disable import/no-extraneous-dependencies */
-import BackbonePlugin from '@vaadin/hilla-generator-plugin-backbone/index.js';
-import ModelPlugin from '@vaadin/hilla-generator-plugin-model/index.js';
+import BackbonePlugin from '@haru/generator-plugin-backbone/index.js';
+import ModelPlugin from '@haru/generator-plugin-model/index.js';
 import sinonChai from 'sinon-chai';
 import { chai, describe, expect, it } from 'vitest';
 import SubTypesPlugin from '../../src/index.js';

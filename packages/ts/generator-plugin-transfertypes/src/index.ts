@@ -1,5 +1,5 @@
-import Plugin from '@vaadin/hilla-generator-core/Plugin.js';
-import type { SharedStorage, TransferTypeMaker } from '@vaadin/hilla-generator-core/SharedStorage.js';
+import Plugin from '@haru/generator-core/Plugin.js';
+import type { SharedStorage, TransferTypeMaker } from '@haru/generator-core/SharedStorage.js';
 import type { OpenAPIV3 } from 'openapi-types';
 import type { Writable } from 'type-fest';
 import { factory, type Identifier } from 'typescript';
@@ -40,10 +40,7 @@ function createReplacedTypeMaker(name: string): ReplacedTypeMaker {
 type ReplacedTypes = Readonly<Record<string, ReplacedTypeMaker>>;
 
 const replacedTypes: ReplacedTypes = Object.fromEntries(
-  ['File', 'Signal', 'NumberSignal', 'ValueSignal', 'ListSignal'].map((name) => [
-    `com.vaadin.hilla.runtime.transfertypes.${name}`,
-    createReplacedTypeMaker(name),
-  ]),
+  ['File'].map((name) => [`com.vaadin.hilla.runtime.transfertypes.${name}`, createReplacedTypeMaker(name)]),
 );
 
 export default class TransferTypesPlugin extends Plugin {
