@@ -361,36 +361,11 @@ public class EngineAutoConfiguration {
         }
 
         public Builder withDefaultAnnotations() {
-            ClassLoader classLoader = getClass().getClassLoader();
-            if (configuration.classpath != null) {
-                var urls = configuration.classpath.stream().map(path -> {
-                    try {
-                        return path.toUri().toURL();
-                    } catch (MalformedURLException e) {
-                        throw new ConfigurationException(
-                                "Classpath contains invalid elements", e);
-                    }
-                }).toArray(URL[]::new);
-                classLoader = new URLClassLoader(urls,
-                        getClass().getClassLoader());
-            }
-
-            try {
-                configuration.parser.setEndpointAnnotations(List.of(
-                        (Class<? extends Annotation>) Class.forName(
-                                "com.vaadin.hilla.BrowserCallable", true,
-                                classLoader),
-                        (Class<? extends Annotation>) Class.forName(
-                                "com.vaadin.hilla.Endpoint", true,
-                                classLoader)));
-                configuration.parser.setEndpointExposedAnnotations(
-                        List.of((Class<? extends Annotation>) Class.forName(
-                                "com.vaadin.hilla.EndpointExposed", true,
-                                classLoader)));
-            } catch (Throwable t) {
-                LOGGER.debug(
-                        "Default annotations not found. Hilla is probably not in the classpath.");
-            }
+            configuration.parser.setEndpointAnnotations(List.of(
+                    com.vaadin.hilla.BrowserCallable.class,
+                    com.vaadin.hilla.Endpoint.class));
+            configuration.parser.setEndpointExposedAnnotations(
+                    List.of(com.vaadin.hilla.EndpointExposed.class));
             return this;
         }
 
