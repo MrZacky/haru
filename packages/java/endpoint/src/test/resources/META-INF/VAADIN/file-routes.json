@@ -1,0 +1,122 @@
+[
+  {
+    "route": "about",
+    "title": "About",
+    "params": {}
+  },
+  {
+    "route": "profile",
+    "params": {},
+    "children": [
+      {
+        "route": "",
+        "title": "Profile",
+        "params": {}
+      },
+      {
+        "route": "account",
+        "title": "Account",
+        "params": {},
+        "children": [
+          {
+            "route": "security",
+            "params": {},
+            "children": [
+              {
+                "route": "password",
+                "params": {},
+                "title": "Password"
+              },
+              {
+                "route": "two-factor-auth",
+                "params": {},
+                "title": "Two Factor Auth"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "route": "friends",
+        "params": {},
+        "title": "Friends Layout",
+        "children": [
+          {
+            "route": "list",
+            "title": "List",
+            "params": {},
+            "unknown": {
+              "anotherProp": "prop"
+            }
+          },
+          {
+            "route": ":user?",
+            "children": [
+              {
+                "route": "edit",
+                "title": "Friend Edit",
+                "params": {
+                  ":user?": "opt"
+                }
+              }
+            ]
+          },
+          {
+            "route": ":user",
+            "title": "Friend Profile",
+            "params": {
+              ":user": "req"
+            }
+          }
+        ]
+      },
+      {
+        "route": "messages",
+        "children": [
+          {
+            "route": "*",
+            "title": "Messages",
+            "params": {
+              "wildcard": "*"
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "route": "test",
+    "params": {},
+    "children": [
+      {
+        "route": "empty",
+        "params": {}
+      },
+      {
+        "route": ":optional?",
+        "title": "Optional",
+        "params": {
+          ":optional?": "opt"
+        }
+      },
+      {
+        "route": "*",
+        "title": "Wildcard",
+        "params": {
+          "*": "*"
+        }
+      },
+      {
+        "route": "no-default-export",
+        "title": "No Default Export",
+        "params": {}
+      }
+    ]
+  },
+  {
+    "route": "layout-only",
+    "title": "Layout Only",
+    "params": {},
+    "children": []
+  }
+]

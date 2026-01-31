@@ -1,0 +1,100 @@
+/*
+ * Copyright 2000-2025 Vaadin Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
+package com.vaadin.hilla;
+
+import static org.mockito.Mockito.mock;
+
+import org.mockito.Mockito;
+import org.springframework.context.ApplicationContext;
+import tools.jackson.databind.ObjectMapper;
+
+import com.vaadin.hilla.auth.CsrfChecker;
+import com.vaadin.hilla.auth.EndpointAccessChecker;
+import com.vaadin.hilla.endpointransfermapper.EndpointTransferMapper;
+import com.vaadin.hilla.parser.jackson.JacksonObjectMapperFactory;
+
+/**
+ * A helper class to build a mocked EndpointController.
+ */
+public class EndpointControllerMockBuilder {
+    private static final EndpointTransferMapper ENDPOINT_TRANSFER_MAPPER = new EndpointTransferMapper();
+    private ApplicationContext applicationContext;
+    private EndpointNameChecker endpointNameChecker = mock(
+            EndpointNameChecker.class);
+    private ExplicitNullableTypeChecker explicitNullableTypeChecker = mock(
+            ExplicitNullableTypeChecker.class);
+    private JacksonObjectMapperFactory factory;
+
+    public EndpointController build() {
+        EndpointRegistry registry = new EndpointRegistry(endpointNameChecker);
+        CsrfChecker csrfChecker = Mockito.mock(CsrfChecker.class);
+        Mockito.when(csrfChecker.validateCsrfTokenInRequest(Mockito.any()))
+                .thenReturn(true);
+        ObjectMapper endpointObjectMapper = createEndpointObjectMapper(
+                applicationContext, factory);
+        EndpointInvoker invoker = Mockito.spy(
+                new EndpointInvoker(applicationContext, endpointObjectMapper,
+                        explicitNullableTypeChecker, registry));
+        EndpointController controller = Mockito
+                .spy(new EndpointController(applicationContext, registry,
+                        invoker, csrfChecker, endpointObjectMapper));
+        Mockito.doReturn(mock(EndpointAccessChecker.class)).when(invoker)
+                .getAccessChecker();
+        return controller;
+    }
+
+    public static ObjectMapper createEndpointObjectMapper(
+            ApplicationContext applicationContext,
+            JacksonObjectMapperFactory factory) {
+        ObjectMapper endpointObjectMapper = factory != null ? factory.build()
+                : createDefaultEndpointMapper(applicationContext);
+        if (endpointObjectMapper != null) {
+            endpointObjectMapper = endpointObjectMapper.rebuild()
+                    .addModule(ENDPOINT_TRANSFER_MAPPER.getJacksonModule())
+                    .build();
+        }
+        return endpointObjectMapper;
+    }
+
+    private static ObjectMapper createDefaultEndpointMapper(
+            ApplicationContext applicationContext) {
+        return new JacksonObjectMapperFactory.Json().build();
+    }
+
+    public EndpointControllerMockBuilder withApplicationContext(
+            ApplicationContext applicationContext) {
+        this.applicationContext = applicationContext;
+        return this;
+    }
+
+    public EndpointControllerMockBuilder withEndpointNameChecker(
+            EndpointNameChecker endpointNameChecker) {
+        this.endpointNameChecker = endpointNameChecker;
+        return this;
+    }
+
+    public EndpointControllerMockBuilder withExplicitNullableTypeChecker(
+            ExplicitNullableTypeChecker explicitNullableTypeChecker) {
+        this.explicitNullableTypeChecker = explicitNullableTypeChecker;
+        return this;
+    }
+
+    public EndpointControllerMockBuilder withObjectMapperFactory(
+            JacksonObjectMapperFactory factory) {
+        this.factory = factory;
+        return this;
+    }
+}
