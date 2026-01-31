@@ -77,6 +77,48 @@ public class Person {
 
 Learn more at [vaadin.com/hilla](https://vaadin.com/hilla)
 
+## Feature Toggles
+
+Hilla features can be individually disabled via `application.properties`, `application.yml`, or `application.yaml`. All features are enabled by default.
+
+```properties
+# application.properties
+hilla.file-router.enabled=false
+hilla.auto-crud.enabled=false
+hilla.vaadin-ui.enabled=false
+```
+
+```yaml
+# application.yml / application.yaml
+hilla:
+  file-router:
+    enabled: false
+  auto-crud:
+    enabled: false
+  vaadin-ui:
+    enabled: false
+```
+
+| Property | Default | Controls |
+|---|---|---|
+| `hilla.file-router.enabled` | `true` | File-based routing Spring beans and generated route code |
+| `hilla.auto-crud.enabled` | `true` | CRUD model generation and infrastructure |
+| `hilla.vaadin-ui.enabled` | `true` | Vaadin UI-specific code generation (form models) |
+
+When multiple configuration files exist, they are checked in this order (first found wins): `application.properties` → `application.yml` → `application.yaml`.
+
+For the Vite plugin, pass `enabled: false` in `vite.config.ts`:
+
+```ts
+import fileRouter from '@vaadin/hilla-file-router/vite-plugin';
+
+export default defineConfig({
+  plugins: [
+    fileRouter({ enabled: false }),
+  ],
+});
+```
+
 ## Get started
 
 Follow the tutorials at https://vaadin.com/docs/latest/getting-started
