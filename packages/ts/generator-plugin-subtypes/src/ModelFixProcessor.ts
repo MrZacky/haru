@@ -1,4 +1,4 @@
-import createSourceFile from '@vaadin/hilla-generator-utils/createSourceFile.js';
+import createSourceFile from '@haru/generator-utils/createSourceFile.js';
 import ts, { type SourceFile } from 'typescript';
 import { propertyNameToString } from './utils.js';
 

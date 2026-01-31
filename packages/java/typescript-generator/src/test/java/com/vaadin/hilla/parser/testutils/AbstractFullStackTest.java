@@ -130,12 +130,12 @@ public abstract class AbstractFullStackTest {
 
     // Standard Hilla generator plugins in the correct loading order
     private static final List<String> GENERATOR_PLUGINS = List.of(
-            "@vaadin/hilla-generator-plugin-transfertypes",
-            "@vaadin/hilla-generator-plugin-backbone",
-            "@vaadin/hilla-generator-plugin-client",
-            "@vaadin/hilla-generator-plugin-model",
-            "@vaadin/hilla-generator-plugin-barrel",
-            "@vaadin/hilla-generator-plugin-subtypes");
+            "@haru/generator-plugin-transfertypes",
+            "@haru/generator-plugin-backbone",
+            "@haru/generator-plugin-client",
+            "@haru/generator-plugin-model",
+            "@haru/generator-plugin-barrel",
+            "@haru/generator-plugin-subtypes");
 
     /**
      * Execute the full stack: Java → OpenAPI → TypeScript
@@ -237,7 +237,7 @@ public abstract class AbstractFullStackTest {
         try {
             String script = """
                     var path = require('path');
-                    var jsonPath = require.resolve('@vaadin/hilla-generator-cli/package.json');
+                    var jsonPath = require.resolve('@haru/generator-cli/package.json');
                     var json = require(jsonPath);
                     console.log(path.resolve(path.dirname(jsonPath), json.bin['tsgen']));
                     """;

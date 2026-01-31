@@ -1,8 +1,8 @@
 /* eslint-disable max-params */
-import type Plugin from '@vaadin/hilla-generator-core/Plugin.js';
-import type { TransferTypes } from '@vaadin/hilla-generator-core/SharedStorage.js';
-import ClientPlugin from '@vaadin/hilla-generator-plugin-client';
-import type DependencyManager from '@vaadin/hilla-generator-utils/dependencies/DependencyManager.js';
+import type Plugin from '@haru/generator-core/Plugin.js';
+import type { TransferTypes } from '@haru/generator-core/SharedStorage.js';
+import ClientPlugin from '@haru/generator-plugin-client';
+import type DependencyManager from '@haru/generator-utils/dependencies/DependencyManager.js';
 import equal from 'fast-deep-equal';
 import { OpenAPIV3 } from 'openapi-types';
 import ts, { type Expression, type Statement, type TypeNode } from 'typescript';

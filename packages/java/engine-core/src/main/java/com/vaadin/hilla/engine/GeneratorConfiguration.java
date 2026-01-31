@@ -154,14 +154,14 @@ public final class GeneratorConfiguration {
 
     static class PluginsProcessor extends ConfigList.Processor<Plugin> {
         static private final List<Plugin> DEFAULTS = List.of(
-                new Plugin("@vaadin/hilla-generator-plugin-transfertypes"),
-                new Plugin("@vaadin/hilla-generator-plugin-backbone"),
-                new Plugin("@vaadin/hilla-generator-plugin-client"),
-                new Plugin("@vaadin/hilla-generator-plugin-barrel"),
-                new Plugin("@vaadin/hilla-generator-plugin-model"),
-                new Plugin("@vaadin/hilla-generator-plugin-push"),
-                new Plugin("@vaadin/hilla-generator-plugin-signals"),
-                new Plugin("@vaadin/hilla-generator-plugin-subtypes"));
+                new Plugin("@haru/generator-plugin-transfertypes"),
+                new Plugin("@haru/generator-plugin-backbone"),
+                new Plugin("@haru/generator-plugin-client"),
+                new Plugin("@haru/generator-plugin-barrel"),
+                new Plugin("@haru/generator-plugin-model"),
+                new Plugin("@haru/generator-plugin-push"),
+                new Plugin("@haru/generator-plugin-signals"),
+                new Plugin("@haru/generator-plugin-subtypes"));
 
         PluginsProcessor() {
             super(DEFAULTS);

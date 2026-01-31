@@ -1,9 +1,9 @@
-import type Plugin from '@vaadin/hilla-generator-core/Plugin.js';
-import type { SharedStorage, TransferTypes } from '@vaadin/hilla-generator-core/SharedStorage.js';
-import ClientPlugin from '@vaadin/hilla-generator-plugin-client';
-import createSourceFile from '@vaadin/hilla-generator-utils/createSourceFile.js';
-import DependencyManager from '@vaadin/hilla-generator-utils/dependencies/DependencyManager.js';
-import PathManager from '@vaadin/hilla-generator-utils/dependencies/PathManager.js';
+import type Plugin from '@haru/generator-core/Plugin.js';
+import type { SharedStorage, TransferTypes } from '@haru/generator-core/SharedStorage.js';
+import ClientPlugin from '@haru/generator-plugin-client';
+import createSourceFile from '@haru/generator-utils/createSourceFile.js';
+import DependencyManager from '@haru/generator-utils/dependencies/DependencyManager.js';
+import PathManager from '@haru/generator-utils/dependencies/PathManager.js';
 import type { SourceFile, Statement } from 'typescript';
 import EndpointMethodOperationProcessor from './EndpointMethodOperationProcessor.js';
 import type { OperationInfo } from './index.js';

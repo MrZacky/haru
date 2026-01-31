@@ -1,4 +1,4 @@
-import type LoggerFactory from '@vaadin/hilla-generator-utils/LoggerFactory.js';
+import type LoggerFactory from '@haru/generator-utils/LoggerFactory.js';
 import type Plugin from './Plugin.js';
 import type { PluginConstructor } from './Plugin.js';
 import type ReferenceResolver from './ReferenceResolver.js';

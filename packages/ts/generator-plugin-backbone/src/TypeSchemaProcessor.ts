@@ -17,9 +17,9 @@ import {
   type NonComposedSchema,
   type ReferenceSchema,
   type Schema,
-} from '@vaadin/hilla-generator-core/Schema.js';
-import type { TransferTypeMaker } from '@vaadin/hilla-generator-core/SharedStorage.js';
-import type DependencyManager from '@vaadin/hilla-generator-utils/dependencies/DependencyManager.js';
+} from '@haru/generator-core/Schema.js';
+import type { TransferTypeMaker } from '@haru/generator-core/SharedStorage.js';
+import type DependencyManager from '@haru/generator-utils/dependencies/DependencyManager.js';
 import ts, { type TypeNode } from 'typescript';
 import { findTypeArguments, findTypeVariable } from './utils.js';
 

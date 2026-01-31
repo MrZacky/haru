@@ -1,7 +1,7 @@
 import { readFile } from 'node:fs/promises';
-import Generator from '@vaadin/hilla-generator-core/Generator.js';
-import type { PluginConstructor } from '@vaadin/hilla-generator-core/Plugin.js';
-import LoggerFactory from '@vaadin/hilla-generator-utils/LoggerFactory.js';
+import Generator from '@haru/generator-core/Generator.js';
+import type { PluginConstructor } from '@haru/generator-core/Plugin.js';
+import LoggerFactory from '@haru/generator-utils/LoggerFactory.js';
 
 export const pathBase = 'com/vaadin/hilla/parser/plugins/backbone';
 

@@ -1,5 +1,5 @@
-import Plugin from '@vaadin/hilla-generator-core/Plugin.js';
-import type { SharedStorage } from '@vaadin/hilla-generator-core/SharedStorage.js';
+import Plugin from '@haru/generator-core/Plugin.js';
+import type { SharedStorage } from '@haru/generator-core/SharedStorage.js';
 
 export default class TestPlugin extends Plugin {
   override get path(): string {

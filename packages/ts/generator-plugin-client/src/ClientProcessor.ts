@@ -1,5 +1,5 @@
-import type Plugin from '@vaadin/hilla-generator-core/Plugin.js';
-import PathManager from '@vaadin/hilla-generator-utils/dependencies/PathManager.js';
+import type Plugin from '@haru/generator-core/Plugin.js';
+import PathManager from '@haru/generator-utils/dependencies/PathManager.js';
 import ts, { type SourceFile } from 'typescript';
 
 const CLIENT_TEMPLATE = `\

@@ -1,4 +1,4 @@
-import type { Schema } from '@vaadin/hilla-generator-core/Schema.js';
+import type { Schema } from '@haru/generator-core/Schema.js';
 import ts, { type ObjectLiteralExpression, type PropertyAssignment } from 'typescript';
 
 interface Annotation {

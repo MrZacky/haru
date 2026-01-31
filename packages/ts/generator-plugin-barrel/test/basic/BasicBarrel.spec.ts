@@ -1,8 +1,8 @@
 /* eslint-disable import/no-extraneous-dependencies */
 import { readFile } from 'node:fs/promises';
-import Generator from '@vaadin/hilla-generator-core/Generator.js';
-import BackbonePlugin from '@vaadin/hilla-generator-plugin-backbone';
-import LoggerFactory from '@vaadin/hilla-generator-utils/LoggerFactory.js';
+import Generator from '@haru/generator-core/Generator.js';
+import BackbonePlugin from '@haru/generator-plugin-backbone';
+import LoggerFactory from '@haru/generator-utils/LoggerFactory.js';
 import sinonChai from 'sinon-chai';
 import { chai, describe, expect, it } from 'vitest';
 import BarrelPlugin from '../../src/index.js';

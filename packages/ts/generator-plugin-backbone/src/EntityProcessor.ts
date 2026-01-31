@@ -1,5 +1,5 @@
 import { dirname } from 'path/posix';
-import type Plugin from '@vaadin/hilla-generator-core/Plugin.js';
+import type Plugin from '@haru/generator-core/Plugin.js';
 import {
   type EnumSchema,
   type ReferenceSchema,
@@ -16,11 +16,11 @@ import {
   type ObjectSchema,
   convertFullyQualifiedNameToRelativePath,
   simplifyFullyQualifiedName,
-} from '@vaadin/hilla-generator-core/Schema.js';
-import type { SharedStorage, TransferTypes } from '@vaadin/hilla-generator-core/SharedStorage.js';
-import createSourceFile from '@vaadin/hilla-generator-utils/createSourceFile.js';
-import DependencyManager from '@vaadin/hilla-generator-utils/dependencies/DependencyManager.js';
-import PathManager from '@vaadin/hilla-generator-utils/dependencies/PathManager.js';
+} from '@haru/generator-core/Schema.js';
+import type { SharedStorage, TransferTypes } from '@haru/generator-core/SharedStorage.js';
+import createSourceFile from '@haru/generator-utils/createSourceFile.js';
+import DependencyManager from '@haru/generator-utils/dependencies/DependencyManager.js';
+import PathManager from '@haru/generator-utils/dependencies/PathManager.js';
 import ts, {
   type Identifier,
   type InterfaceDeclaration,

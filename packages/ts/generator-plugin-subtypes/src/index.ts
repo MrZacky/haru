@@ -1,6 +1,6 @@
-import Plugin from '@vaadin/hilla-generator-core/Plugin.js';
-import { isReferenceSchema, convertFullyQualifiedNameToRelativePath } from '@vaadin/hilla-generator-core/Schema.js';
-import type { SharedStorage } from '@vaadin/hilla-generator-core/SharedStorage.js';
+import Plugin from '@haru/generator-core/Plugin.js';
+import { isReferenceSchema, convertFullyQualifiedNameToRelativePath } from '@haru/generator-core/Schema.js';
+import type { SharedStorage } from '@haru/generator-core/SharedStorage.js';
 import { ModelFixProcessor } from './ModelFixProcessor.js';
 import { SubTypesProcessor } from './SubTypesProcessor.js';
 import { TypeFixProcessor } from './TypeFixProcessor.js';

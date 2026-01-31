@@ -1,5 +1,5 @@
-import Plugin from '@vaadin/hilla-generator-core/Plugin.js';
-import type { SharedStorage, TransferTypeMaker } from '@vaadin/hilla-generator-core/SharedStorage.js';
+import Plugin from '@haru/generator-core/Plugin.js';
+import type { SharedStorage, TransferTypeMaker } from '@haru/generator-core/SharedStorage.js';
 import type { OpenAPIV3 } from 'openapi-types';
 import type { Writable } from 'type-fest';
 import { factory, type Identifier } from 'typescript';

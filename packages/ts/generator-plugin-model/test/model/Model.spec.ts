@@ -1,7 +1,7 @@
 import { readdir, readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
-import Generator from '@vaadin/hilla-generator-core/Generator.js';
-import LoggerFactory from '@vaadin/hilla-generator-utils/LoggerFactory.js';
+import Generator from '@haru/generator-core/Generator.js';
+import LoggerFactory from '@haru/generator-utils/LoggerFactory.js';
 import sinonChai from 'sinon-chai';
 import { chai, describe, expect, it } from 'vitest';
 import ModelPlugin from '../../src/index.js';

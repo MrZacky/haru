@@ -1,4 +1,4 @@
-import BackbonePlugin from '@vaadin/hilla-generator-plugin-backbone';
+import BackbonePlugin from '@haru/generator-plugin-backbone';
 import { describe, it, expect } from 'vitest';
 import TransferTypesPlugin from '../../src/index.js';
 import { createGenerator, loadInput } from '../utils/common.js';
