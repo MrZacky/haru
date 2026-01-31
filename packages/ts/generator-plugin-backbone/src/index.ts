@@ -1,6 +1,6 @@
 import Plugin from '@vaadin/hilla-generator-core/Plugin.js';
 import type { SharedStorage } from '@vaadin/hilla-generator-core/SharedStorage.js';
-import type { OpenAPIV3 } from 'openapi-types';
+import { OpenAPIV3 } from 'openapi-types';
 import type { SourceFile } from 'typescript';
 import EndpointProcessor from './EndpointProcessor.js';
 import { EntityProcessor } from './EntityProcessor.js';
@@ -8,6 +8,13 @@ import { EntityProcessor } from './EntityProcessor.js';
 export enum BackbonePluginSourceType {
   Endpoint = 'endpoint',
   Entity = 'entity',
+}
+
+export interface OperationInfo {
+  path: string;
+  httpMethod: OpenAPIV3.HttpMethods;
+  operation: OpenAPIV3.OperationObject;
+  pathParameters: OpenAPIV3.ParameterObject[];
 }
 
 export default class BackbonePlugin extends Plugin {
@@ -32,28 +39,37 @@ export default class BackbonePlugin extends Plugin {
 
   async #processEndpoints(storage: SharedStorage): Promise<readonly SourceFile[]> {
     this.logger.debug('Processing endpoints');
-    const endpoints = new Map<string, Map<string, OpenAPIV3.PathItemObject>>();
+    const tagGroups = new Map<string, OperationInfo[]>();
 
     Object.entries(storage.api.paths)
       .filter(([, pathItem]) => !!pathItem)
       .forEach(([path, pathItem]) => {
-        const [, endpointName, endpointMethodName] = path.split('/');
+        // Collect path-level parameters
+        const pathLevelParams = ((pathItem as OpenAPIV3.PathItemObject).parameters ?? []).map((p) =>
+          this.resolver.resolve(p),
+        );
 
-        let methods: Map<string, OpenAPIV3.PathItemObject>;
+        for (const httpMethod of Object.values(OpenAPIV3.HttpMethods)) {
+          const operation = (pathItem as OpenAPIV3.PathItemObject)[httpMethod];
+          if (!operation) continue;
 
-        if (endpoints.has(endpointName)) {
-          methods = endpoints.get(endpointName)!;
-        } else {
-          methods = new Map();
-          endpoints.set(endpointName, methods);
+          // Merge path-level and operation-level parameters
+          const operationParams = (operation.parameters ?? []).map((p) => this.resolver.resolve(p));
+          const allPathParams = [...pathLevelParams, ...operationParams].filter((p) => p.in === 'path');
+
+          // Group by first tag, or derive from first path segment
+          const tag = operation.tags?.[0] ?? path.split('/').find(Boolean) ?? 'Default';
+
+          if (!tagGroups.has(tag)) {
+            tagGroups.set(tag, []);
+          }
+          tagGroups.get(tag)!.push({ path, httpMethod, operation, pathParameters: allPathParams });
         }
-
-        methods.set(endpointMethodName, pathItem!);
       });
 
     const processors = await Promise.all(
-      Array.from(endpoints.entries(), async ([endpointName, methods]) =>
-        EndpointProcessor.create(endpointName, methods, storage, this),
+      Array.from(tagGroups.entries(), async ([tagName, operations]) =>
+        EndpointProcessor.create(tagName, operations, storage, this),
       ),
     );
 

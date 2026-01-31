@@ -4,18 +4,18 @@ import ClientPlugin from '@vaadin/hilla-generator-plugin-client';
 import createSourceFile from '@vaadin/hilla-generator-utils/createSourceFile.js';
 import DependencyManager from '@vaadin/hilla-generator-utils/dependencies/DependencyManager.js';
 import PathManager from '@vaadin/hilla-generator-utils/dependencies/PathManager.js';
-import { OpenAPIV3 } from 'openapi-types';
 import type { SourceFile, Statement } from 'typescript';
 import EndpointMethodOperationProcessor from './EndpointMethodOperationProcessor.js';
+import type { OperationInfo } from './index.js';
 
 export default class EndpointProcessor {
   static async create(
     name: string,
-    methods: Map<string, OpenAPIV3.PathItemObject>,
+    operations: OperationInfo[],
     storage: SharedStorage,
     owner: Plugin,
   ): Promise<EndpointProcessor> {
-    const endpoint = new EndpointProcessor(name, methods, storage, owner);
+    const endpoint = new EndpointProcessor(name, operations, storage, owner);
     endpoint.#dependencies.imports.default.add(
       endpoint.#dependencies.paths.createRelativePath(await ClientPlugin.getClientFileName(storage.outputDir)),
       'client',
@@ -25,21 +25,16 @@ export default class EndpointProcessor {
 
   readonly #createdFilePaths = new PathManager({ extension: 'ts' });
   readonly #dependencies = new DependencyManager(new PathManager({ extension: '.js' }));
-  readonly #methods: Map<string, OpenAPIV3.PathItemObject>;
+  readonly #operations: OperationInfo[];
   readonly #name: string;
   readonly #outputDir: string | undefined;
   readonly #transferTypes: TransferTypes;
   readonly #owner: Plugin;
 
-  private constructor(
-    name: string,
-    methods: Map<string, OpenAPIV3.PathItemObject>,
-    storage: SharedStorage,
-    owner: Plugin,
-  ) {
+  private constructor(name: string, operations: OperationInfo[], storage: SharedStorage, owner: Plugin) {
     this.#name = name;
     this.#owner = owner;
-    this.#methods = methods;
+    this.#operations = operations;
     this.#outputDir = storage.outputDir;
     this.#transferTypes = storage.transferTypes;
   }
@@ -47,9 +42,9 @@ export default class EndpointProcessor {
   async process(): Promise<SourceFile> {
     this.#owner.logger.debug(`Processing endpoint: ${this.#name}`);
 
-    const statements = (
-      await Promise.all(Array.from(this.#methods, async ([method, pathItem]) => this.#processMethod(method, pathItem)))
-    ).flatMap((item) => item);
+    const statements = (await Promise.all(this.#operations.map(async (op) => this.#processOperation(op)))).filter(
+      Boolean,
+    ) as Statement[];
 
     const { exports, imports } = this.#dependencies;
 
@@ -59,25 +54,47 @@ export default class EndpointProcessor {
     );
   }
 
-  async #processMethod(method: string, pathItem: OpenAPIV3.PathItemObject): Promise<readonly Statement[]> {
-    this.#owner.logger.debug(`Processing endpoint method: ${this.#name}.${method}`);
+  async #processOperation(op: OperationInfo): Promise<Statement | undefined> {
+    const functionName = this.#deriveFunctionName(op);
+    this.#owner.logger.debug(
+      `Processing operation: ${this.#name}.${functionName} (${op.httpMethod.toUpperCase()} ${op.path})`,
+    );
 
-    return (
-      await Promise.all(
-        Object.values(OpenAPIV3.HttpMethods)
-          .filter((httpMethod) => pathItem[httpMethod])
-          .map(async (httpMethod) =>
-            EndpointMethodOperationProcessor.createProcessor(
-              httpMethod,
-              this.#name,
-              method,
-              pathItem[httpMethod]!,
-              this.#dependencies,
-              this.#transferTypes,
-              this.#owner,
-            )?.process(this.#outputDir),
-          ),
-      )
-    ).filter(Boolean) as readonly Statement[];
+    const processor = EndpointMethodOperationProcessor.createProcessor(
+      op.httpMethod,
+      op.path,
+      functionName,
+      op.operation,
+      op.pathParameters,
+      this.#dependencies,
+      this.#transferTypes,
+      this.#owner,
+    );
+
+    return processor.process(this.#outputDir);
+  }
+
+  #deriveFunctionName(op: OperationInfo): string {
+    const { operationId } = op.operation;
+    if (!operationId) {
+      // Derive from HTTP method + path: GET /pets/{petId} → getPetsPetId
+      const pathPart = op.path
+        .replace(/[{}]/gu, '')
+        .split('/')
+        .filter(Boolean)
+        .map((s) => s.charAt(0).toUpperCase() + s.slice(1))
+        .join('');
+      return op.httpMethod.toLowerCase() + pathPart;
+    }
+
+    // Strip Vaadin-style prefix/suffix: "TagName_methodName_METHOD"
+    const vaadinPattern = new RegExp(`^${this.#name}_(.+)_${op.httpMethod.toUpperCase()}$`, 'u');
+    const match = operationId.match(vaadinPattern);
+    if (match) {
+      return match[1];
+    }
+
+    // Use operationId as-is for standard REST APIs
+    return operationId;
   }
 }

@@ -11,76 +11,79 @@ import EndpointMethodResponseProcessor from './EndpointMethodResponseProcessor.j
 
 export type EndpointMethodOperation = OpenAPIV3.OperationObject;
 
-export default abstract class EndpointMethodOperationProcessor {
-  // eslint-disable-next-line @typescript-eslint/max-params
-  static createProcessor(
-    httpMethod: OpenAPIV3.HttpMethods,
-    endpointName: string,
-    endpointMethodName: string,
-    operation: EndpointMethodOperation,
-    dependencies: DependencyManager,
-    transferTypes: TransferTypes,
-    owner: Plugin,
-  ): EndpointMethodOperationProcessor | undefined {
-    switch (httpMethod) {
-      case OpenAPIV3.HttpMethods.POST: {
-        // eslint-disable-next-line @typescript-eslint/no-use-before-define
-        return new EndpointMethodOperationPOSTProcessor(
-          endpointName,
-          endpointMethodName,
-          operation,
-          dependencies,
-          transferTypes,
-          owner,
-        );
-      }
-      default:
-        owner.logger.warn(`Processing ${httpMethod.toUpperCase()} currently is not supported`);
-        return undefined;
-    }
-  }
-
-  abstract process(outputDir?: string): Promise<Statement | undefined>;
-}
-
-class EndpointMethodOperationPOSTProcessor extends EndpointMethodOperationProcessor {
+export default class EndpointMethodOperationProcessor {
   readonly #dependencies: DependencyManager;
   readonly #transferTypes: TransferTypes;
-  readonly #endpointMethodName: string;
-  readonly #endpointName: string;
+  readonly #functionName: string;
+  readonly #httpMethod: OpenAPIV3.HttpMethods;
+  readonly #path: string;
   readonly #operation: EndpointMethodOperation;
+  readonly #pathParameters: OpenAPIV3.ParameterObject[];
   readonly #owner: Plugin;
 
   // eslint-disable-next-line @typescript-eslint/max-params
-  constructor(
-    endpointName: string,
-    endpointMethodName: string,
+  static createProcessor(
+    httpMethod: OpenAPIV3.HttpMethods,
+    path: string,
+    functionName: string,
     operation: EndpointMethodOperation,
+    pathParameters: OpenAPIV3.ParameterObject[],
+    dependencies: DependencyManager,
+    transferTypes: TransferTypes,
+    owner: Plugin,
+  ): EndpointMethodOperationProcessor {
+    return new EndpointMethodOperationProcessor(
+      httpMethod,
+      path,
+      functionName,
+      operation,
+      pathParameters,
+      dependencies,
+      transferTypes,
+      owner,
+    );
+  }
+
+  // eslint-disable-next-line @typescript-eslint/max-params
+  constructor(
+    httpMethod: OpenAPIV3.HttpMethods,
+    path: string,
+    functionName: string,
+    operation: EndpointMethodOperation,
+    pathParameters: OpenAPIV3.ParameterObject[],
     dependencies: DependencyManager,
     transferTypes: TransferTypes,
     owner: Plugin,
   ) {
-    super();
     this.#owner = owner;
     this.#dependencies = dependencies;
-    this.#endpointName = endpointName;
-    this.#endpointMethodName = endpointMethodName;
+    this.#httpMethod = httpMethod;
+    this.#path = path;
+    this.#functionName = functionName;
     this.#operation = operation;
+    this.#pathParameters = pathParameters;
     this.#transferTypes = transferTypes;
   }
 
   async process(outputDir?: string): Promise<Statement | undefined> {
     const { exports, imports, paths } = this.#dependencies;
-    this.#owner.logger.debug(`${this.#endpointName}.${this.#endpointMethodName} - processing POST method`);
+    this.#owner.logger.debug(`${this.#functionName} - processing ${this.#httpMethod.toUpperCase()} ${this.#path}`);
+
+    const hasRequestBody =
+      this.#httpMethod === OpenAPIV3.HttpMethods.POST ||
+      this.#httpMethod === OpenAPIV3.HttpMethods.PUT ||
+      this.#httpMethod === OpenAPIV3.HttpMethods.PATCH;
 
     const { initParam, packedParameters, parameters } = new EndpointMethodRequestBodyProcessor(
-      this.#operation.requestBody,
+      hasRequestBody ? this.#operation.requestBody : undefined,
       this.#dependencies,
       this.#transferTypes,
       this.#owner,
+      this.#pathParameters,
+      this.#operation.parameters as OpenAPIV3.ParameterObject[] | undefined,
     ).process();
 
-    const methodIdentifier = exports.named.add(this.#endpointMethodName);
+    const methodIdentifier = exports.named.add(this.#functionName);
     const clientLibIdentifier = imports.default.getIdentifier(
       paths.createRelativePath(await ClientPlugin.getClientFileName(outputDir)),
     )!;
@@ -89,8 +92,8 @@ class EndpointMethodOperationPOSTProcessor extends EndpointMethodOperationProces
       ts.factory.createPropertyAccessExpression(clientLibIdentifier, ts.factory.createIdentifier('call')),
       undefined,
       [
-        ts.factory.createStringLiteral(this.#endpointName),
-        ts.factory.createStringLiteral(this.#endpointMethodName),
+        ts.factory.createStringLiteral(this.#httpMethod.toUpperCase()),
+        ts.factory.createStringLiteral(this.#path),
         packedParameters,
         initParam,
       ].filter(Boolean) as readonly Expression[],
@@ -110,7 +113,7 @@ class EndpointMethodOperationPOSTProcessor extends EndpointMethodOperationProces
   }
 
   #prepareResponseType(): TypeNode {
-    this.#owner.logger.debug(`${this.#endpointName}.${this.#endpointMethodName} POST - processing response type`);
+    this.#owner.logger.debug(`${this.#functionName} ${this.#httpMethod.toUpperCase()} - processing response type`);
 
     const responseTypes = Object.entries(this.#operation.responses)
       .flatMap(([code, response]) =>
