@@ -127,6 +127,7 @@ public class EngineAutoConfigurationTest {
                 .of(EndpointFromCustomFinder.class);
         var endpointAnnotation = BrowserCallableEndpoint.class;
         var endpointExposedAnnotation = BrowserCallableExposed.class;
+        var externalOpenAPIPath = Path.of("/tmp/openapi.json");
 
         var config = new EngineAutoConfiguration.Builder().baseDir(baseDir)
                 .buildDir(buildDir).classesDirs(classesDirs)
@@ -137,7 +138,8 @@ public class EngineAutoConfigurationTest {
                 .classLoader(classLoader)
                 .browserCallableFinder(browserCallableFinder)
                 .endpointAnnotations(endpointAnnotation)
-                .endpointExposedAnnotations(endpointExposedAnnotation).build();
+                .endpointExposedAnnotations(endpointExposedAnnotation)
+                .externalOpenAPIPath(externalOpenAPIPath).build();
 
         assertEquals(baseDir, config.getBaseDir());
         assertEquals(buildDir, config.getBuildDir());
@@ -160,5 +162,7 @@ public class EngineAutoConfigurationTest {
                 config.getEndpointAnnotations());
         assertEquals(List.of(endpointExposedAnnotation),
                 config.getEndpointExposedAnnotations());
+        assertEquals(externalOpenAPIPath,
+                config.getExternalOpenAPIPath());
     }
 }

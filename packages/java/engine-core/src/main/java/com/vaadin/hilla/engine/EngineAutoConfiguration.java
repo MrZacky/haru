@@ -62,6 +62,7 @@ public class EngineAutoConfiguration {
     private boolean productionMode = false;
     private String nodeCommand = "node";
     private ClassLoader classLoader;
+    private Path externalOpenAPIPath;
     private EngineConfiguration userEngineConfiguration;
 
     private EngineAutoConfiguration() {
@@ -149,6 +150,10 @@ public class EngineAutoConfiguration {
 
     public List<Class<? extends Annotation>> getEndpointExposedAnnotations() {
         return parser.getEndpointExposedAnnotations();
+    }
+
+    public Path getExternalOpenAPIPath() {
+        return externalOpenAPIPath;
     }
 
     public Path getOpenAPIFile() {
@@ -245,6 +250,7 @@ public class EngineAutoConfiguration {
             this.configuration.productionMode = configuration.productionMode;
             this.configuration.nodeCommand = configuration.nodeCommand;
             this.configuration.classLoader = configuration.classLoader;
+            this.configuration.externalOpenAPIPath = configuration.externalOpenAPIPath;
             this.configuration.parser.setEndpointAnnotations(
                     configuration.getEndpointAnnotations());
             this.configuration.parser.setEndpointExposedAnnotations(
@@ -332,6 +338,12 @@ public class EngineAutoConfiguration {
 
         public Builder classLoader(ClassLoader value) {
             configuration.classLoader = value;
+            return this;
+        }
+
+        public Builder externalOpenAPIPath(Path value) {
+            configuration.externalOpenAPIPath = value != null ? resolve(value)
+                    : null;
             return this;
         }
 

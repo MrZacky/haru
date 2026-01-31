@@ -40,6 +40,7 @@ public final class ParserProcessor {
     private final Path baseDir;
     private final Set<Path> classPath;
     private final Path openAPIFile;
+    private final Path externalOpenAPIPath;
     private final ParserConfiguration.PluginsProcessor pluginsProcessor = new ParserConfiguration.PluginsProcessor();
     private List<Class<? extends Annotation>> endpointAnnotations = List.of();
     private List<Class<? extends Annotation>> endpointExposedAnnotations = List
@@ -49,6 +50,7 @@ public final class ParserProcessor {
     public ParserProcessor(EngineAutoConfiguration conf) {
         this.baseDir = conf.getBaseDir();
         this.openAPIFile = conf.getOpenAPIFile();
+        this.externalOpenAPIPath = conf.getExternalOpenAPIPath();
         this.classPath = conf.getClasspath();
         this.endpointAnnotations = conf.getEndpointAnnotations();
         this.endpointExposedAnnotations = conf.getEndpointExposedAnnotations();
@@ -73,6 +75,11 @@ public final class ParserProcessor {
     }
 
     public void process(List<Class<?>> endpoints) throws ParserException {
+        if (externalOpenAPIPath != null) {
+            processExternalOpenAPI();
+            return;
+        }
+
         String openAPIString;
 
         try {
@@ -83,6 +90,35 @@ public final class ParserProcessor {
                     e);
         }
 
+        writeOpenAPIIfChanged(openAPIString);
+    }
+
+    /**
+     * Processes an external OpenAPI file by copying it to the expected output
+     * location. This skips Java class scanning entirely, allowing the generator
+     * to work with any OpenAPI specification.
+     */
+    private void processExternalOpenAPI() throws ParserException {
+        if (!Files.isRegularFile(externalOpenAPIPath)) {
+            throw new ParserException(
+                    "External OpenAPI file not found: " + externalOpenAPIPath);
+        }
+
+        logger.info("Using external OpenAPI file: {}", externalOpenAPIPath);
+
+        try {
+            var openAPIString = Files.readString(externalOpenAPIPath);
+            Files.createDirectories(openAPIFile.getParent());
+            writeOpenAPIIfChanged(openAPIString);
+        } catch (IOException e) {
+            throw new ParserException(
+                    "Unable to read external OpenAPI file: "
+                            + externalOpenAPIPath,
+                    e);
+        }
+    }
+
+    private void writeOpenAPIIfChanged(String openAPIString) {
         // Only save the file if it has changed
         Optional.of(openAPIFile).filter(Files::isRegularFile)
                 .map(this::readFromFile).filter(openAPIString::equals)
