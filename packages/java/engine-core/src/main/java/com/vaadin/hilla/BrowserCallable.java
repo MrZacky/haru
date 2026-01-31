@@ -5,11 +5,19 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import org.springframework.stereotype.Component;
+
 /**
- * Marks a class as a browser-callable endpoint. Methods in annotated classes
- * will be exposed to the TypeScript frontend via generated client code.
+ * Makes the methods of the annotated class available to the browser.
+ * <p>
+ * For each class, a corresponding TypeScript class is generated in
+ * {@code src/main/frontend/generated} with TypeScript methods for invoking the
+ * methods in this class.
+ * <p>
+ * This is an alias for {@link Endpoint}.
  */
-@Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
+@Retention(RetentionPolicy.RUNTIME)
+@Component
 public @interface BrowserCallable {
 }
