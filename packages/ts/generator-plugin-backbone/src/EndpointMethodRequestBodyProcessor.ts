@@ -21,8 +21,7 @@ export type EndpointMethodRequestBodyProcessingResult = Readonly<{
 }>;
 
 const DEFAULT_INIT_PARAM_NAME = 'init';
-const INIT_TYPE_NAME = 'EndpointRequestInit';
-const HILLA_FRONTEND_NAME = '@vaadin/hilla-frontend';
+const INIT_TYPE_NAME = 'ClientRequestInit';
 
 export default class EndpointMethodRequestBodyProcessor {
   readonly #dependencies: DependencyManager;
@@ -31,6 +30,7 @@ export default class EndpointMethodRequestBodyProcessor {
   readonly #requestBody?: EndpointMethodRequestBody;
   readonly #pathParameters: OpenAPIV3.ParameterObject[];
   readonly #queryParameters: OpenAPIV3.ParameterObject[];
+  readonly #clientModulePath: string;
 
   // eslint-disable-next-line @typescript-eslint/max-params
   constructor(
@@ -38,6 +38,7 @@ export default class EndpointMethodRequestBodyProcessor {
     dependencies: DependencyManager,
     transferTypes: TransferTypes,
     owner: Plugin,
+    clientModulePath: string,
     pathParameters?: OpenAPIV3.ParameterObject[],
     operationParameters?: OpenAPIV3.ParameterObject[],
   ) {
@@ -45,15 +46,16 @@ export default class EndpointMethodRequestBodyProcessor {
     this.#dependencies = dependencies;
     this.#requestBody = requestBody ? owner.resolver.resolve(requestBody) : undefined;
     this.#transferTypes = transferTypes;
+    this.#clientModulePath = clientModulePath;
     this.#pathParameters = pathParameters ?? [];
     this.#queryParameters = (operationParameters ?? []).filter((p) => p.in === 'query');
   }
 
   process(): EndpointMethodRequestBodyProcessingResult {
     const { imports, paths } = this.#dependencies;
-    const path = paths.createBareModulePath(HILLA_FRONTEND_NAME);
+    const clientPath = paths.createRelativePath(this.#clientModulePath);
     const initTypeIdentifier =
-      imports.named.getIdentifier(path, INIT_TYPE_NAME) ?? imports.named.add(path, INIT_TYPE_NAME);
+      imports.named.getIdentifier(clientPath, INIT_TYPE_NAME) ?? imports.named.add(clientPath, INIT_TYPE_NAME);
 
     // Collect all parameter data: path params + query params + request body params
     const allParameterData: Array<readonly [string, Schema]> = [];

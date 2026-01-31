@@ -74,19 +74,20 @@ export default class EndpointMethodOperationProcessor {
       this.#httpMethod === OpenAPIV3.HttpMethods.PUT ||
       this.#httpMethod === OpenAPIV3.HttpMethods.PATCH;
 
+    const clientFileName = await ClientPlugin.getClientFileName(outputDir);
+
     const { initParam, packedParameters, parameters } = new EndpointMethodRequestBodyProcessor(
       hasRequestBody ? this.#operation.requestBody : undefined,
       this.#dependencies,
       this.#transferTypes,
       this.#owner,
+      clientFileName,
       this.#pathParameters,
       this.#operation.parameters as OpenAPIV3.ParameterObject[] | undefined,
     ).process();
 
     const methodIdentifier = exports.named.add(this.#functionName);
-    const clientLibIdentifier = imports.default.getIdentifier(
-      paths.createRelativePath(await ClientPlugin.getClientFileName(outputDir)),
-    )!;
+    const clientLibIdentifier = imports.default.getIdentifier(paths.createRelativePath(clientFileName))!;
 
     const callExpression = ts.factory.createCallExpression(
       ts.factory.createPropertyAccessExpression(clientLibIdentifier, ts.factory.createIdentifier('call')),
